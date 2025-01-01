@@ -1,39 +1,44 @@
 {
-    "tasks": [
-        {
-            "id": 1,
-            "title": "Task 1",
-            "description": "Description 1",
-            "done": false
-        },
-        {
-            "id": 2,
-            "title": "Task 2",
-            "description": "Description 2",
-            "done": false
-        },
-        {
-            "id": 3,
-            "title": "Task 3",
-            "description": "Description 3",
-            "done": false
-        }
-    ],
-    "users": [
-        {
-            "id": 1,
-            "name": "User 1",
-            "email": "  "
-},
-        {
-            "id": 2,
-            "name": "User 2",
-            "email": "  "
-},
-        {
-            "id": 3,
-            "name": "User 3",
-            "email": "  "
-}
-    ]
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Task 1",
+      "description": "Description 1",
+      "done": false
+    },
+    {
+      "id": 2,
+      "title": "Task 2",
+      "description": "Description 2",
+      "done": false
+    },
+    {
+      "id": 3,
+      "title": "Task 3",
+      "description": "Description 3",
+      "done": false
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "User 1",
+      "email": "Somebody@gmail.com "
+    },
+    {
+      "id": 2,
+      "name": "User 2",
+      "email": "MisterBur@gmail.com"
+    },
+    {
+      "id": 3,
+      "name": "User 3",
+      "email": "ChinaKot@gmail.com"
+    },
+    {
+      "id": "3732064a-d3b2-46a9-8a3a-e9cab0caa07d",
+      "name": "some@gmail.com",
+      "email": "asdsad"
+    }
+  ]
 }
