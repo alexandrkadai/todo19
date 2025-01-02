@@ -21,7 +21,7 @@ export function createUser(user: User) {
 }
 
 export function deleteUser(id: string) {
-  return fetch(`http:localhost:3001/users/${id}`, {
+  return fetch(`http://localhost:3001/users/${id}`, {
     method: 'Delete',
   }).then((res) => res.json());
 }

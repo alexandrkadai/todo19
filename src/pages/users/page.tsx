@@ -1,5 +1,5 @@
-import { Suspense, use, useState } from 'react';
-import { createUser, fetchUsers } from '../../shared/api';
+import { startTransition, Suspense, use, useState, useTransition } from 'react';
+import { createUser, deleteUser, fetchUsers } from '../../shared/api';
 
 type User = {
   id: string;
@@ -11,9 +11,9 @@ const defaultUsersPromise = fetchUsers();
 
 export function UserPage() {
   const [usersPromise, setUsersPromise] = useState(defaultUsersPromise);
-  const refetchUsers = () => {
-    setUsersPromise(fetchUsers());
-  };
+
+  const refetchUsers = () => startTransition(() => setUsersPromise(fetchUsers()));
+  
   return (
     <main className="mx-auto flex flex-col p-4 pt-10">
       <h1 className="flex items-center justify-center text-2xl font-bold">
@@ -24,38 +24,56 @@ export function UserPage() {
       </section>
       <section className="flex flex-col items-center justify-center">
         <Suspense fallback={<div>Loading .... </div>}>
-          <UsersList usersPromise={usersPromise} />
+          <UsersList usersPromise={usersPromise} refetchUsers={refetchUsers}/>
         </Suspense>
       </section>
     </main>
   );
 }
 export function CreateUserForm({ refetchUsers }: { refetchUsers: () => void }) {
-  const [email,setEmail] = useState("");
-  const [name, setName] = useState("");
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) =>{
+  const [isePending, startTransition] = useTransition();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-   await createUser({
-       id: crypto.randomUUID(), 
+    startTransition(async () => {
+      await createUser({
+        id: crypto.randomUUID(),
         name,
-        email, 
+        email,
+      });
+     
+        refetchUsers();
+        setName('');
+        setEmail('');
+    
     });
-    refetchUsers();
-    setName("");
-    setEmail("");
   };
 
   return (
     <form className="mx-auto flex flex-col gap-2" onSubmit={handleSubmit}>
-
       <label htmlFor="name">Enter Name</label>
-      <input name="name" type="text" className="border-2 border-blue-500" value={name} onChange={(e) => setEmail(e.target.value)}/>
+      <input
+        name="name"
+        type="text"
+        className="border-2 border-blue-500"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
       <label htmlFor="email">Enter Email</label>
-      <input name="email" type="email" className="border-2 border-blue-500" value={email} onChange={(e) => setName(e.target.value)}/>
+      <input
+        name="email"
+        type="email"
+        className="border-2 border-blue-500"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
       <button
-        className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
+        className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 disabled:bg-gray-300"
         type="submit"
+        disabled={isePending}
       >
         ADD
       </button>
@@ -63,7 +81,7 @@ export function CreateUserForm({ refetchUsers }: { refetchUsers: () => void }) {
   );
 }
 
-export function UsersList({ usersPromise }: { usersPromise: Promise<User[]> }) {
+export function UsersList({ usersPromise, refetchUsers }: { usersPromise: Promise<User[]>, refetchUsers: () => void }) {
   const users = use(usersPromise);
 
   return (
@@ -73,18 +91,29 @@ export function UsersList({ usersPromise }: { usersPromise: Promise<User[]> }) {
       </h2>
       <div className="flex flex-col">
         {users.map((user) => (
-          <UserCard user={user} key={user.id} />
+          <UserCard user={user} key={user.id} refetchUsers={refetchUsers}/>
         ))}
       </div>
     </>
   );
 }
 
-export function UserCard({ user }: { user: User }) {
+export function UserCard({ user,refetchUsers }: { user: User, refetchUsers: () => void }) {
+  const [isePending, startTransition] = useTransition();
+
+  const handleDelete = async() => {
+    startTransition(async () => {
+      await deleteUser(user.id);
+        refetchUsers();
+      
+    });
+  };
+
   return (
-    <div className="m-2 flex w-[350px] rounded border bg-gray-100 p-2">
+    <div className="m-2 flex w-[350px] gap-5 rounded border bg-gray-100 p-2">
+      {user.name}
       {user.email}
-      <button type="button" className="ml-auto text-red-500">
+      <button onClick={handleDelete} type="button" className="ml-auto text-red-500 disabled:text-black" disabled={isePending}>
         Delete
       </button>
     </div>
