@@ -1,5 +1,6 @@
 import { startTransition, Suspense, use, useState, useTransition } from 'react';
 import { createUser, deleteUser, fetchUsers } from '../../shared/api';
+import { ErrorBoundary } from 'react-error-boundary';
 
 type User = {
   id: string;
@@ -12,8 +13,9 @@ const defaultUsersPromise = fetchUsers();
 export function UserPage() {
   const [usersPromise, setUsersPromise] = useState(defaultUsersPromise);
 
-  const refetchUsers = () => startTransition(() => setUsersPromise(fetchUsers()));
-  
+  const refetchUsers = () =>
+    startTransition(() => setUsersPromise(fetchUsers()));
+
   return (
     <main className="mx-auto flex flex-col p-4 pt-10">
       <h1 className="flex items-center justify-center text-2xl font-bold">
@@ -22,11 +24,22 @@ export function UserPage() {
       <section className="mt-2 flex items-center justify-center">
         <CreateUserForm refetchUsers={refetchUsers} />
       </section>
-      <section className="flex flex-col items-center justify-center">
-        <Suspense fallback={<div>Loading .... </div>}>
-          <UsersList usersPromise={usersPromise} refetchUsers={refetchUsers}/>
-        </Suspense>
-      </section>
+      <ErrorBoundary
+        fallbackRender={(e) => (
+          <div className="text-red-500">
+            Somethi went worng {JSON.stringify(e)}
+          </div>
+        )}
+      >
+        <section className="flex flex-col items-center justify-center">
+          <Suspense fallback={<div>Loading .... </div>}>
+            <UsersList
+              usersPromise={usersPromise}
+              refetchUsers={refetchUsers}
+            />
+          </Suspense>
+        </section>
+      </ErrorBoundary>
     </main>
   );
 }
@@ -44,11 +57,10 @@ export function CreateUserForm({ refetchUsers }: { refetchUsers: () => void }) {
         name,
         email,
       });
-     
-        refetchUsers();
-        setName('');
-        setEmail('');
-    
+
+      refetchUsers();
+      setName('');
+      setEmail('');
     });
   };
 
@@ -81,7 +93,13 @@ export function CreateUserForm({ refetchUsers }: { refetchUsers: () => void }) {
   );
 }
 
-export function UsersList({ usersPromise, refetchUsers }: { usersPromise: Promise<User[]>, refetchUsers: () => void }) {
+export function UsersList({
+  usersPromise,
+  refetchUsers,
+}: {
+  usersPromise: Promise<User[]>;
+  refetchUsers: () => void;
+}) {
   const users = use(usersPromise);
 
   return (
@@ -91,21 +109,26 @@ export function UsersList({ usersPromise, refetchUsers }: { usersPromise: Promis
       </h2>
       <div className="flex flex-col">
         {users.map((user) => (
-          <UserCard user={user} key={user.id} refetchUsers={refetchUsers}/>
+          <UserCard user={user} key={user.id} refetchUsers={refetchUsers} />
         ))}
       </div>
     </>
   );
 }
 
-export function UserCard({ user,refetchUsers }: { user: User, refetchUsers: () => void }) {
+export function UserCard({
+  user,
+  refetchUsers,
+}: {
+  user: User;
+  refetchUsers: () => void;
+}) {
   const [isePending, startTransition] = useTransition();
 
-  const handleDelete = async() => {
+  const handleDelete = async () => {
     startTransition(async () => {
       await deleteUser(user.id);
-        refetchUsers();
-      
+      refetchUsers();
     });
   };
 
@@ -113,7 +136,12 @@ export function UserCard({ user,refetchUsers }: { user: User, refetchUsers: () =
     <div className="m-2 flex w-[350px] gap-5 rounded border bg-gray-100 p-2">
       {user.name}
       {user.email}
-      <button onClick={handleDelete} type="button" className="ml-auto text-red-500 disabled:text-black" disabled={isePending}>
+      <button
+        onClick={handleDelete}
+        type="button"
+        className="ml-auto text-red-500 disabled:text-black"
+        disabled={isePending}
+      >
         Delete
       </button>
     </div>
