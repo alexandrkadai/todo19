@@ -1,4 +1,4 @@
-import { startTransition, Suspense, use, useState, useTransition } from 'react';
+import { startTransition, Suspense, use, useActionState, useState, useTransition } from 'react';
 import { createUser, deleteUser, fetchUsers } from '../../shared/api';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -26,7 +26,7 @@ export function UserPage() {
       </section>
       <ErrorBoundary
         fallbackRender={(e) => (
-          <div className="text-red-500">
+          <div className="mt-5 flex items-center justify-center text-red-500">
             Somethi went worng {JSON.stringify(e)}
           </div>
         )}
@@ -44,6 +44,7 @@ export function UserPage() {
   );
 }
 export function CreateUserForm({ refetchUsers }: { refetchUsers: () => void }) {
+  const [] = useActionState();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
 
@@ -52,15 +53,7 @@ export function CreateUserForm({ refetchUsers }: { refetchUsers: () => void }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(async () => {
-      await createUser({
-        id: crypto.randomUUID(),
-        name,
-        email,
-      });
-
-      refetchUsers();
-      setName('');
-      setEmail('');
+     
     });
   };
 
@@ -139,7 +132,7 @@ export function UserCard({
       <button
         onClick={handleDelete}
         type="button"
-        className="ml-auto text-red-500 disabled:text-black"
+        className="ml-auto text-red-500 disabled:text-black hover:text-red-800"
         disabled={isePending}
       >
         Delete
