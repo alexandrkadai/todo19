@@ -1,6 +1,14 @@
-import { startTransition, Suspense, use, useActionState, useState, useTransition } from 'react';
-import { createUser, deleteUser, fetchUsers } from '../../shared/api';
+import {
+  startTransition,
+  Suspense,
+  use,
+  useActionState,
+  useState,
+  useTransition,
+} from 'react';
+import { deleteUser, fetchUsers } from '../../shared/api';
 import { ErrorBoundary } from 'react-error-boundary';
+import { createUserAction } from './actions';
 
 type User = {
   id: string;
@@ -44,16 +52,19 @@ export function UserPage() {
   );
 }
 export function CreateUserForm({ refetchUsers }: { refetchUsers: () => void }) {
-  const [] = useActionState();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
 
-  const [isePending, startTransition] = useTransition();
+  const [state, dispatch, isPending] = useActionState(
+    createUserAction({ refetchUsers, setEmail, setName }),
+    {}
+  );
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(async () => {
-     
+      dispatch({ email });
     });
   };
 
@@ -82,6 +93,7 @@ export function CreateUserForm({ refetchUsers }: { refetchUsers: () => void }) {
       >
         ADD
       </button>
+      {state.error && <div className='text-red-400'>{state?.error}</div>}
     </form>
   );
 }
@@ -132,7 +144,7 @@ export function UserCard({
       <button
         onClick={handleDelete}
         type="button"
-        className="ml-auto text-red-500 disabled:text-black hover:text-red-800"
+        className="ml-auto text-red-500 hover:text-red-800 disabled:text-black"
         disabled={isePending}
       >
         Delete
